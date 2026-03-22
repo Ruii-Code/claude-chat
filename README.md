@@ -1,6 +1,17 @@
-# Claude Chat — Free & Unlimited
+# Claude Chat — Free via Puter.js
 
-Chat con Claude Opus 4.6, Sonnet 4.6, y más modelos de Anthropic **gratis e ilimitado** via [Puter.js](https://developer.puter.com/).
+Chat con Claude Opus 4.6, Sonnet 4.6, y más modelos de Anthropic **gratis** via [Puter.js](https://developer.puter.com/). Sin API key, sin tarjeta de crédito.
+
+## Límites reales (Puter.js Free)
+
+Cada cuenta gratuita de Puter tiene un balance de **$0.25 USD**. En nuestras pruebas esto rindió aproximadamente:
+
+| Modelo | Output tokens | Input tokens |
+|---|---|---|
+| Claude Sonnet 4.6 | ~15,400 | ~4,500 |
+| Claude Sonnet 4.5 | ~635 | ~51 |
+
+Eso equivale a **1-2 conversaciones largas** con Sonnet, o más si usas **Haiku 4.5** (mucho más barato). Puedes crear cuentas adicionales de Puter para obtener más créditos.
 
 ## Features
 
@@ -11,7 +22,6 @@ Chat con Claude Opus 4.6, Sonnet 4.6, y más modelos de Anthropic **gratis e ili
 - **System prompt** configurable
 - **Exportar** conversaciones como .md
 - **Streaming** de respuestas en tiempo real
-- **Sin API key, sin registro, sin límites**
 
 ## Demo
 
