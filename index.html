@@ -405,9 +405,10 @@
 <!-- Auth overlay for mobile popup blocker -->
 <div class="auth-overlay" id="authOverlay">
     <h2>Claude Chat</h2>
-    <p>Chat gratis con Claude Opus 4.6, Sonnet 4.6 y más modelos de Anthropic via Puter.js</p>
+    <p>Chat gratis con Claude Opus 4.6, Sonnet 4.6 y m&aacute;s modelos de Anthropic via Puter.js</p>
     <button class="auth-btn" id="authBtn" onclick="initPuter()">Conectar con Puter</button>
-    <span class="auth-status" id="authStatus">Conectado</span>
+    <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Si el popup no abre, permite popups para este sitio en tu navegador</p>
+    <span class="auth-status" id="authStatus"></span>
 </div>
 
 <div class="header">
@@ -740,49 +741,86 @@
         updateTokenCount();
     }
 
-    // Puter auth for mobile
+    // Puter auth
     let puterReady = false;
 
-    async function initPuter() {
+    function hideAuth() {
+        puterReady = true;
+        document.getElementById('authOverlay').classList.add('hidden');
+        userInput.focus();
+    }
+
+    function showAuthError(msg) {
         const btn = document.getElementById('authBtn');
         const status = document.getElementById('authStatus');
+        btn.textContent = 'Reintentar';
+        btn.disabled = false;
+        status.textContent = msg;
+        status.style.display = 'block';
+        status.style.color = '#f87171';
+    }
+
+    // Called directly from button click (synchronous = iOS allows popup)
+    function initPuter() {
+        const btn = document.getElementById('authBtn');
         btn.textContent = 'Conectando...';
         btn.disabled = true;
+
+        // signIn() must be called synchronously from click handler
+        // so iOS Safari allows the popup
         try {
-            await puter.ai.chat('test', { model: 'claude-haiku-4-5' });
-            puterReady = true;
-            status.style.display = 'block';
-            btn.style.display = 'none';
-            setTimeout(() => {
-                document.getElementById('authOverlay').classList.add('hidden');
-                userInput.focus();
-            }, 500);
-        } catch (e) {
-            btn.textContent = 'Reintentar conexion';
-            btn.disabled = false;
-            status.textContent = 'Error: ' + (e.message || 'Intenta de nuevo');
-            status.style.display = 'block';
-            status.style.color = '#f87171';
+            puter.auth.signIn().then(() => {
+                hideAuth();
+            }).catch((e) => {
+                // User may have closed popup - try anyway
+                testAndProceed();
+            });
+        } catch(e) {
+            // If signIn not available, try direct chat
+            testAndProceed();
         }
     }
 
-    // Auto-detect if puter is already authorized
-    async function checkPuter() {
+    // Test if we can actually make API calls
+    async function testAndProceed() {
+        const btn = document.getElementById('authBtn');
+        const status = document.getElementById('authStatus');
         try {
-            if (puter && puter.auth && puter.auth.isSignedIn && puter.auth.isSignedIn()) {
-                document.getElementById('authOverlay').classList.add('hidden');
-                puterReady = true;
-                userInput.focus();
+            const r = await puter.ai.chat('hi', { model: 'claude-haiku-4-5' });
+            if (r) {
+                hideAuth();
                 return;
             }
         } catch(e) {}
-        // Show auth overlay
+        showAuthError('No se pudo conectar. Permite popups e intenta de nuevo.');
+    }
+
+    // Auto-detect on load
+    async function checkPuter() {
+        try {
+            // Check if already signed in
+            if (puter && puter.auth && puter.auth.isSignedIn()) {
+                hideAuth();
+                return;
+            }
+        } catch(e) {}
+
+        // Try a silent request - if user was already authed it works
+        try {
+            const r = await puter.ai.chat('hi', { model: 'claude-haiku-4-5' });
+            if (r) {
+                hideAuth();
+                return;
+            }
+        } catch(e) {}
+
+        // Show auth button
         document.getElementById('authOverlay').classList.remove('hidden');
     }
 
     // Init
     updateTokenCount();
-    setTimeout(checkPuter, 1000);
+    setTimeout(checkPuter, 1500);
 </script>
 </body>
 </html>
